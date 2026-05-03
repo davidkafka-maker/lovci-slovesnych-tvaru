@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Lovci slovesných tvarů – 30 s</title>
+<style>
+  :root{
+    --bg1:#12091f;--bg2:#24103d;--card:#fff8ea;--ink:#21142d;
+    --accent:#ffcc4d;--accent2:#7cf7d4;--bad:#ff4d6d;--good:#19c37d;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;min-height:100vh;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:white;background:
+      radial-gradient(circle at top left, #5c2b85 0, transparent 32%),
+      radial-gradient(circle at bottom right, #116466 0, transparent 34%),
+      linear-gradient(135deg,var(--bg1),var(--bg2));
+    display:flex;align-items:center;justify-content:center;padding:14px;
+  }
+  .app{width:min(760px,100%);}
+  .screen{display:none}.screen.active{display:block}
+  .panel{
+    background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.25);
+    border-radius:28px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.35);
+    backdrop-filter:blur(10px);
+  }
+  h1{font-size:clamp(34px,8vw,62px);margin:0 0 8px;text-align:center;line-height:1}
+  .subtitle{text-align:center;font-size:18px;opacity:.9;margin-bottom:22px}
+  .menu{display:grid;gap:14px}
+  button{
+    border:0;border-radius:20px;padding:18px 16px;font-weight:900;font-size:22px;cursor:pointer;
+    color:#1b1027;background:linear-gradient(180deg,#ffe68a,#ffba35);
+    box-shadow:0 9px 0 #b86f00,0 16px 22px rgba(0,0,0,.25);
+    transition:.08s transform;
+  }
+  button:active{transform:translateY(4px);box-shadow:0 5px 0 #b86f00,0 10px 14px rgba(0,0,0,.25)}
+  .secondary{background:linear-gradient(180deg,#c2fff0,#55dfc4);box-shadow:0 9px 0 #078c79}
+  .danger{background:linear-gradient(180deg,#ff93a8,#ff4d6d);box-shadow:0 9px 0 #9f1630;color:white}
+  .topbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .pill{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:9px 13px;font-weight:800}
+  .timer{font-size:28px;color:var(--accent)}
+  .task{
+    background:var(--card);color:var(--ink);border-radius:24px;padding:22px;margin:12px 0 16px;
+    box-shadow:inset 0 0 0 3px rgba(255,204,77,.5);
+  }
+  .label{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:#775d18;font-weight:900;margin-bottom:8px}
+  .instruction{font-size:clamp(24px,6vw,38px);line-height:1.17;font-weight:950}
+  .verb{display:inline-block;background:#2b1744;color:#fff;border-radius:14px;padding:3px 10px;margin-left:3px}
+  input{
+    width:100%;font-size:clamp(26px,7vw,42px);border:0;border-radius:22px;padding:18px 16px;
+    outline:none;background:white;color:#111;font-weight:850;text-align:center;
+    box-shadow:0 8px 0 rgba(0,0,0,.18);
+  }
+  .nameInput{font-size:22px;padding:14px 16px;border-radius:18px;box-shadow:0 6px 0 rgba(0,0,0,.18);margin-bottom:2px}
+  .answerLine{min-height:74px;margin-top:14px;text-align:center;font-weight:950;font-size:clamp(28px,8vw,48px)}
+  .small{font-size:18px;line-height:1.35;font-weight:700;opacity:.95}
+  .good{color:var(--good)} .bad{color:var(--bad)}
+  .correct{font-size:22px;background:rgba(255,255,255,.12);border-radius:18px;padding:12px;margin-top:8px}
+  .footerBtns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .hint{opacity:.85;text-align:center;margin-top:12px}
+  @media (max-width:520px){
+    body{padding:7px;align-items:flex-start;min-height:100svh}
+    .app{width:100%}
+    .panel{padding:13px;border-radius:20px}
+    h1{font-size:clamp(30px,9vw,44px)}
+    .subtitle{font-size:16px;margin-bottom:16px}
+    .topbar{gap:6px;margin-bottom:8px}
+    .pill{font-size:14px;padding:7px 9px}
+    .timer{font-size:21px}
+    .footerBtns{grid-template-columns:1fr;gap:9px;margin-top:10px}
+    button{font-size:19px;padding:14px 10px;border-radius:17px}
+    .task{padding:14px;margin:9px 0 12px;border-radius:20px}
+    .label{font-size:13px;margin-bottom:5px}
+    .instruction{font-size:clamp(21px,6.4vw,30px);line-height:1.12}
+    .verb{padding:2px 8px;border-radius:12px;margin-top:4px}
+    input{font-size:clamp(24px,7vw,34px);padding:14px 10px;border-radius:18px}
+    .nameInput{font-size:18px;padding:12px 10px}
+    .answerLine{min-height:54px;margin-top:8px;font-size:clamp(26px,8vw,38px)}
+    .correct{font-size:18px;padding:10px}
+    .hint{font-size:14px;margin-top:8px}
+  }
+  @media (max-height:680px) and (max-width:520px){
+    .subtitle{display:none}
+    .hint{font-size:13px}
+    .task{margin:7px 0 9px}
+    .answerLine{min-height:45px}
+    button{padding:12px 10px}
+  }
+
+  /* Finální mobilní zhuštění: cílem je, aby menu i hlavní otázka seděly na běžném mobilu bez zbytečného scrollování. */
+  @media (max-width:600px){
+    html,body{width:100%;}
+    body{padding:6px;align-items:flex-start;}
+    .panel{padding:11px;border-radius:18px;}
+    .menu{gap:8px;}
+    h1{font-size:clamp(27px,8.2vw,38px);margin-bottom:4px;}
+    .subtitle{font-size:14px;margin-bottom:9px;line-height:1.22;}
+    .hint{font-size:12px;line-height:1.22;margin-top:7px;}
+    .nameInput{font-size:17px;padding:9px 10px;border-radius:15px;}
+    button{font-size:18px;padding:11px 9px;border-radius:15px;box-shadow:0 6px 0 #b86f00,0 10px 15px rgba(0,0,0,.22);}
+    button.secondary{box-shadow:0 6px 0 #078c79,0 10px 15px rgba(0,0,0,.22);}
+    button.danger{box-shadow:0 6px 0 #9f1630,0 10px 15px rgba(0,0,0,.22);}
+    .topbar{gap:5px;margin-bottom:6px;}
+    .pill{font-size:12px;padding:6px 7px;}
+    .timer{font-size:18px;}
+    .task{padding:10px;margin:6px 0 8px;border-radius:17px;}
+    .label{font-size:11px;margin-bottom:3px;}
+    .instruction{font-size:clamp(18px,5.8vw,27px);line-height:1.08;}
+    .verb{padding:1px 6px;border-radius:10px;margin-left:2px;}
+    input#answer{font-size:clamp(21px,6.3vw,31px);padding:11px 8px;border-radius:16px;}
+    .answerLine{min-height:40px;margin-top:6px;font-size:clamp(22px,7vw,34px);}
+    .correct{font-size:16px;padding:8px;margin-top:5px;border-radius:14px;}
+    .footerBtns{gap:7px;margin-top:8px;}
+  }
+  @media (max-width:600px) and (max-height:740px){
+    .subtitle{display:none;}
+    h1{font-size:clamp(25px,7.6vw,34px);}
+    .menu{gap:7px;}
+    .hint{display:none;}
+    .panel{padding:9px;}
+    button{font-size:17px;padding:10px 8px;}
+    .task{padding:9px;margin:5px 0 7px;}
+    .answerLine{min-height:34px;}
+    .correct{font-size:15px;padding:7px;}
+  }
+  @media (max-width:390px){
+    .pill{font-size:11px;padding:5px 6px;}
+    .timer{font-size:17px;}
+    .instruction{font-size:clamp(17px,5.6vw,24px);}
+    button{font-size:16px;padding:9px 7px;}
+    .nameInput{font-size:16px;padding:8px;}
+  }
+
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="menu" class="screen active">
+    <div class="panel">
+      <h1>Lovci slovesných tvarů</h1>
+      <div class="subtitle">Vytvoř přesný slovesný tvar podle osoby, způsobu, času a rodu.</div>
+      <div class="menu">
+        <input id="studentName" class="nameInput" autocomplete="name" placeholder="jméno žáka" />
+        <input id="studentClass" class="nameInput" autocomplete="off" placeholder="třída (např. 3.A)" />
+        <button onclick="startGame('training')">TRÉNINK</button>
+        <button class="secondary" onclick="startGame('challenge')">VÝZVA</button>
+        <button class="secondary" onclick="startGame('test')">TEST</button>
+        <button class="danger" onclick="openResults()">VÝSLEDKY</button>
+      </div>
+      <p class="hint">Jméno a třídu žák vyplní před spuštěním. TRÉNINK se nezapisuje. VÝZVA a TEST se po dokončení odešlou automaticky.</p>
+    </div>
+  </section>
+
+  <section id="game" class="screen">
+    <div class="panel">
+      <div class="topbar">
+        <div class="pill" id="modePill">TRÉNINK</div>
+        <div class="pill timer" id="timer">—</div>
+        <div class="pill">Skóre: <span id="score">0</span></div>
+      </div>
+      <div class="task">
+        <div class="label">Zadání</div>
+        <div class="instruction" id="instruction"></div>
+      </div>
+      <input id="answer" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="napiš tvar..." />
+      <div class="answerLine" id="feedback"></div>
+      <div class="correct" id="correctBox" style="display:none"></div>
+      <div class="footerBtns">
+        <button id="checkBtn" onclick="checkAnswer()">OK</button>
+        <button id="continueBtn" class="secondary" onclick="nextQuestion()" style="display:none">DALŠÍ OTÁZKA</button>
+        <button class="danger" onclick="backToMenu()">MENU</button>
+      </div>
+      <p class="hint" id="continueHint"></p>
+    </div>
+  </section>
+
+  <section id="end" class="screen">
+    <div class="panel">
+      <h1 id="endTitle">Hotovo!</h1>
+      <div class="subtitle" id="endText"></div>
+      <div class="menu">
+        <button onclick="backToMenu()">ZPĚT DO MENU</button>
+        <button class="secondary" onclick="backToMenu()">MENU</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+let audioCtx = null;
+function unlockAudio(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+  }catch(e){}
+}
+document.addEventListener("pointerdown", unlockAudio, {once:true});
+document.addEventListener("keydown", unlockAudio, {once:true});
+function tone(freq, dur=0.12, type="sine", vol=0.07){
+  try{
+    unlockAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + dur);
+  }catch(e){}
+}
+function soundOK(){ tone(660,0.09,"triangle",0.08); setTimeout(()=>tone(880,0.11,"triangle",0.08),90); }
+function soundBad(){ tone(180,0.16,"sawtooth",0.06); setTimeout(()=>tone(120,0.18,"sawtooth",0.05),120); }
+function soundCheat(){
+  try{
+    unlockAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = "sine";
+    const now = audioCtx.currentTime;
+    osc.frequency.setValueAtTime(1350, now);
+    osc.frequency.linearRampToValueAtTime(1850, now + 0.75);
+    osc.frequency.linearRampToValueAtTime(1250, now + 1.55);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.22, now + 0.03);
+    gain.gain.setValueAtTime(0.22, now + 1.35);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.65);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + 1.7);
+  }catch(e){
+    tone(1500,1.5,"sine",0.2);
+  }
+}
+function soundWin(){ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,0.12,"triangle",0.08),i*95)); }
+
+const DATA = [
+  // indikativ prézens, aktivum
+  {verb:"MLČET", spec:"2. os. sg., indikativ, prézens, aktivum, rod nerozlišen", answers:["mlčíš","ty mlčíš"]},
+  {verb:"PSÁT", spec:"1. os. pl., indikativ, prézens, aktivum, rod nerozlišen", answers:["píšeme","my píšeme"]},
+  {verb:"NÉST", spec:"3. os. pl., indikativ, prézens, aktivum, rod nerozlišen", answers:["nesou","oni nesou","ony nesou","ona nesou"]},
+  {verb:"PÉCT", spec:"2. os. sg., indikativ, prézens, aktivum, rod nerozlišen", answers:["pečeš","ty pečeš"]},
+  {verb:"KRÝT", spec:"3. os. pl., indikativ, prézens, aktivum, rod nerozlišen", answers:["kryjí","kryjou","oni kryjí","oni kryjou","ony kryjí","ony kryjou"]},
+  {verb:"SMÁT SE", spec:"3. os. pl., indikativ, prézens, aktivum, rod nerozlišen", answers:["smějí se","smějou se","oni se smějí","oni se smějou","ony se smějí","ony se smějou"]},
+  {verb:"MOCI", spec:"1. os. pl., indikativ, prézens, aktivum, rod nerozlišen", answers:["můžeme","my můžeme"]},
+  {verb:"CHTÍT", spec:"2. os. pl., indikativ, prézens, aktivum, rod nerozlišen", answers:["chcete","vy chcete"]},
+  {verb:"JÍST", spec:"3. os. sg., indikativ, prézens, aktivum, rod nerozlišen", answers:["jí","on jí","ona jí","ono jí"]},
+  {verb:"VĚDĚT", spec:"1. os. sg., indikativ, prézens, aktivum, rod nerozlišen", answers:["vím","já vím"]},
+
+  // indikativ préteritum, aktivum
+  {verb:"DĚLAT", spec:"3. os. sg., indikativ, préteritum, aktivum, rod mužský životný", answers:["dělal","on dělal"]},
+  {verb:"ČÍST", spec:"3. os. pl., indikativ, préteritum, aktivum, rod ženský", answers:["četly","ony četly"]},
+  {verb:"MINOUT", spec:"3. os. sg., indikativ, préteritum, aktivum, rod střední", answers:["minulo","ono minulo"]},
+  {verb:"UMÝT SE", spec:"1. os. sg., indikativ, préteritum, aktivum, rod mužský životný", answers:["umyl jsem se","já jsem se umyl","já se umyl"]},
+  {verb:"POSADIT SE", spec:"3. os. pl., indikativ, préteritum, aktivum, rod mužský životný", answers:["posadili se","oni se posadili"]},
+  {verb:"VRÁTIT SE", spec:"2. os. sg., indikativ, préteritum, aktivum, rod ženský", answers:["vrátila ses","ty ses vrátila"]},
+  {verb:"ODEJÍT", spec:"1. os. pl., indikativ, préteritum, aktivum, rod mužský životný", answers:["odešli jsme","my jsme odešli"]},
+  {verb:"ZŮSTAT", spec:"2. os. pl., indikativ, préteritum, aktivum, rod ženský", answers:["zůstaly jste","vy jste zůstaly"]},
+  {verb:"BĚŽET", spec:"3. os. pl., indikativ, préteritum, aktivum, rod střední", answers:["běžela","ona běžela"]},
+  {verb:"PŘINÉST", spec:"1. os. sg., indikativ, préteritum, aktivum, rod ženský", answers:["přinesla jsem","já jsem přinesla"]},
+
+  // indikativ futurum, aktivum
+  {verb:"PŘIJÍT", spec:"1. os. sg., indikativ, futurum, aktivum, rod nerozlišen", answers:["přijdu","já přijdu"]},
+  {verb:"ŘÍCT", spec:"3. os. sg., indikativ, futurum, aktivum, rod nerozlišen", answers:["řekne","on řekne","ona řekne","ono řekne"]},
+  {verb:"UDĚLAT", spec:"2. os. pl., indikativ, futurum, aktivum, rod nerozlišen", answers:["uděláte","vy uděláte"]},
+  {verb:"NAPSAT", spec:"1. os. pl., indikativ, futurum, aktivum, rod nerozlišen", answers:["napíšeme","my napíšeme"]},
+  {verb:"BÝT", spec:"3. os. pl., indikativ, futurum, aktivum, rod nerozlišen", answers:["budou","oni budou","ony budou","ona budou"]},
+  {verb:"PRACOVAT", spec:"2. os. sg., indikativ, futurum, aktivum, rod nerozlišen", answers:["budeš pracovat","ty budeš pracovat"]},
+  {verb:"CESTOVAT", spec:"1. os. sg., indikativ, futurum, aktivum, rod nerozlišen", answers:["budu cestovat","já budu cestovat"]},
+  {verb:"STUDOVAT", spec:"3. os. sg., indikativ, futurum, aktivum, rod nerozlišen", answers:["bude studovat","on bude studovat","ona bude studovat","ono bude studovat"]},
+
+  // kondicionál prézens, aktivum
+  {verb:"VIDĚT", spec:"1. os. pl., kondicionál, prézens, aktivum, rod mužský životný", answers:["viděli bychom","my bychom viděli"]},
+  {verb:"ZPÍVAT", spec:"2. os. sg., kondicionál, prézens, aktivum, rod ženský", answers:["zpívala bys","ty bys zpívala"]},
+  {verb:"DĚLAT", spec:"3. os. pl., kondicionál, prézens, aktivum, rod ženský", answers:["dělaly by","ony by dělaly"]},
+  {verb:"BÝT", spec:"2. os. sg., kondicionál, prézens, aktivum, rod mužský životný", answers:["byl bys","ty bys byl"]},
+
+  // kondicionál préteritum, aktivum
+  {verb:"VIDĚT", spec:"1. os. pl., kondicionál, préteritum, aktivum, rod mužský životný", answers:["byli bychom viděli","my bychom byli viděli"]},
+  {verb:"ZPÍVAT", spec:"2. os. sg., kondicionál, préteritum, aktivum, rod ženský", answers:["byla bys zpívala","ty bys byla zpívala"]},
+  {verb:"VRÁTIT SE", spec:"2. os. sg., kondicionál, préteritum, aktivum, rod ženský", answers:["byla by ses vrátila","ty by ses byla vrátila"]},
+  {verb:"SETKAT SE", spec:"1. os. pl., kondicionál, préteritum, aktivum, rod mužský životný", answers:["byli bychom se setkali","my bychom se byli setkali"]},
+  {verb:"BÝT", spec:"2. os. sg., kondicionál, préteritum, aktivum, rod mužský životný", answers:["byl bys býval","ty bys byl býval"]},
+  {verb:"DĚLAT", spec:"3. os. pl., kondicionál, préteritum, aktivum, rod ženský", answers:["byly by dělaly","ony by byly dělaly"]},
+
+  // indikativ prézens, pasivum — infinitiv je vždy aktivní
+  {verb:"ČÍST", spec:"3. os. sg., indikativ, prézens, pasivum, rod mužský neživotný", answers:["je čten","on je čten","čte se"]},
+  {verb:"SLEDOVAT", spec:"3. os. pl., indikativ, prézens, pasivum, rod mužský životný", answers:["jsou sledováni","oni jsou sledováni"]},
+  {verb:"CHVÁLIT", spec:"2. os. sg., indikativ, prézens, pasivum, rod ženský", answers:["jsi chválena","ty jsi chválena"]},
+  {verb:"ZVÁT", spec:"1. os. pl., indikativ, prézens, pasivum, rod mužský životný", answers:["jsme zváni","my jsme zváni"]},
+  {verb:"STAVĚT", spec:"3. os. sg., indikativ, prézens, pasivum, rod mužský neživotný", answers:["je stavěn","staví se"]},
+
+  // indikativ préteritum, pasivum
+  {verb:"POZVAT", spec:"3. os. sg., indikativ, préteritum, pasivum, rod mužský životný", answers:["byl pozván","on byl pozván"]},
+  {verb:"OTEVŘÍT", spec:"3. os. sg., indikativ, préteritum, pasivum, rod ženský", answers:["byla otevřena","ona byla otevřena"]},
+  {verb:"UZAVŘÍT", spec:"3. os. pl., indikativ, préteritum, pasivum, rod mužský neživotný", answers:["byly uzavřeny","ony byly uzavřeny"]},
+  {verb:"ZACHRÁNIT", spec:"3. os. pl., indikativ, préteritum, pasivum, rod mužský životný", answers:["byli zachráněni","oni byli zachráněni"]},
+  {verb:"NAPSAT", spec:"3. os. sg., indikativ, préteritum, pasivum, rod střední", answers:["bylo napsáno","ono bylo napsáno"]},
+
+  // indikativ futurum, pasivum
+  {verb:"VYROBIT", spec:"3. os. sg., indikativ, futurum, pasivum, rod mužský neživotný", answers:["bude vyroben","on bude vyroben"]},
+  {verb:"NAPSAT", spec:"3. os. pl., indikativ, futurum, pasivum, rod ženský / mužský neživotný", answers:["budou napsány","ony budou napsány"]},
+  {verb:"PŘIJMOUT", spec:"1. os. sg., indikativ, futurum, pasivum, rod ženský", answers:["budu přijata","já budu přijata"]},
+  {verb:"ODMĚNIT", spec:"2. os. pl., indikativ, futurum, pasivum, rod mužský životný", answers:["budete odměněni","vy budete odměněni"]},
+  {verb:"VYSVĚTLIT", spec:"3. os. sg., indikativ, futurum, pasivum, rod střední", answers:["bude vysvětleno","ono bude vysvětleno"]},
+  {verb:"OPRAVIT", spec:"3. os. sg., indikativ, futurum, pasivum, rod mužský neživotný", answers:["bude opraven","on bude opraven","opraví se"]},
+
+  // kondicionál préteritum, pasivum
+  {verb:"VYROBIT", spec:"3. os. pl., kondicionál, préteritum, pasivum, rod mužský životný", answers:["byli by vyrobeni","oni by byli vyrobeni"]},
+  {verb:"VYROBIT", spec:"3. os. pl., kondicionál, préteritum, pasivum, rod ženský / mužský neživotný", answers:["byly by vyrobeny","ony by byly vyrobeny"]},
+  {verb:"VYROBIT", spec:"3. os. sg., kondicionál, préteritum, pasivum, rod ženský", answers:["byla by vyrobena","ona by byla vyrobena"]},
+  {verb:"VYROBIT", spec:"3. os. sg., kondicionál, préteritum, pasivum, rod střední", answers:["bylo by vyrobeno","ono by bylo vyrobeno"]},
+  {verb:"NAPSAT", spec:"3. os. sg., kondicionál, préteritum, pasivum, rod střední", answers:["bylo by napsáno","ono by bylo napsáno"]}
+];
+
+let mode="training", pool=[], current=null, score=0, asked=0, streak=0, timerInt=null, timeLeft=0, locked=false, resultSent=false;
+let antiCheatArmed=false, antiCheatGrace=null, aborting=false;
+const CHALLENGE_TARGET=5, TEST_LIMIT=16, TIME=30;
+// Sem je potřeba vložit finální URL nasazeného Google Apps Scriptu /exec.
+// Bez něj aplikace funguje, ale výsledky se do tabulky neodešlou.
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwzaSUu7CxSbquIerkaX1S-1tKI8tHSBOrh2hXmlenGppLqlsCPob8v2ysbeJRgEn-r/exec";
+const APP_NAME = "Lovci slovesných tvarů";
+const SHEET_ID = "1vj9nyqgrW-SLoAjUdEskG1NEjCsZM3I5aBLcZ3bmFGc";
+const RESULTS_URL = "https://docs.google.com/spreadsheets/d/1vj9nyqgrW-SLoAjUdEskG1NEjCsZM3I5aBLcZ3bmFGc/edit?usp=sharing";
+
+function $(id){return document.getElementById(id)}
+function norm(s){
+  return (s||"").toLowerCase().trim().replace(/\s+/g," ");
+}
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+  return a;
+}
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function getStudentName(){ return ($("studentName")?.value || "").trim(); }
+function getStudentClass(){ return ($("studentClass")?.value || "").trim(); }
+function openResults(){ window.open(RESULTS_URL, "_blank", "noopener"); }
+function modeLabel(m){ return m==="challenge" ? "VÝZVA" : m==="test" ? "TEST" : "TRÉNINK"; }
+
+function isStrictModeActive(){
+  return (mode==="challenge" || mode==="test") && document.getElementById("game").classList.contains("active") && antiCheatArmed && !resultSent && !aborting;
+}
+function armAntiCheat(){
+  antiCheatArmed=false;
+  clearTimeout(antiCheatGrace);
+  // Krátká ochranná prodleva brání falešnému ukončení při startu hry nebo otevření klávesnice.
+  antiCheatGrace=setTimeout(()=>{ antiCheatArmed=true; }, 1200);
+}
+function disarmAntiCheat(){
+  antiCheatArmed=false;
+  clearTimeout(antiCheatGrace);
+}
+function abortForLeaving(){
+  if(!isStrictModeActive()) return;
+  aborting=true;
+  clearInterval(timerInt);
+  locked=true;
+  soundCheat();
+  const label=modeLabel(mode);
+  const total = mode==="test" ? TEST_LIMIT : CHALLENGE_TARGET;
+  // Ve VÝZVĚ i TESTU bereme opuštění okna jako neúspěšný pokus.
+  sendResult(label, total, "6", "OPUŠTĚNÍ OKNA / PODEZŘENÍ NA PODVOD");
+  show("end");
+  $("endTitle").textContent = "Pokus ukončen";
+  $("endText").textContent = "Během režimu " + label + " bylo opuštěno okno aplikace. Výsledek se zapisuje stupněm 6. Spusť nový pokus u učitele.";
+  disarmAntiCheat();
+}
+function startGame(m){
+  unlockAudio();
+  if(m!=="training" && (!getStudentName() || !getStudentClass())){
+    alert("Před spuštěním VÝZVY nebo TESTU vyplň jméno i třídu.");
+    if(!getStudentName()) $("studentName").focus(); else $("studentClass").focus();
+    return;
+  }
+  mode=m; score=0; asked=0; streak=0; pool=shuffle(DATA); locked=false; resultSent=false;
+  $("modePill").textContent = modeLabel(m);
+  $("score").textContent=score;
+  show("game"); nextQuestion();
+  if(mode!=="training") armAntiCheat(); else disarmAntiCheat();
+}
+function nextQuestion(){
+  locked=false;
+  $("feedback").innerHTML="";
+  $("correctBox").style.display="none";
+  $("continueHint").textContent="";
+  $("continueBtn").style.display="none";
+  $("checkBtn").style.display="inline-block";
+  $("answer").disabled=false;
+  if(mode==="test" && asked>=TEST_LIMIT){return endGame();}
+  if(mode==="challenge" && streak>=CHALLENGE_TARGET){return endGame();}
+  if(pool.length===0) pool=shuffle(DATA);
+  current=pool.pop(); asked++;
+  $("instruction").innerHTML = `${current.spec}<br>od slovesa <span class="verb">${current.verb}</span>`;
+  $("answer").value=""; $("answer").focus();
+  if(mode==="training"){$("timer").textContent="—"; clearInterval(timerInt)} else {startTimer()}
+}
+function startTimer(){
+  clearInterval(timerInt); timeLeft=TIME; $("timer").textContent=timeLeft+" s";
+  timerInt=setInterval(()=>{
+    timeLeft--; $("timer").textContent=timeLeft+" s";
+    if(timeLeft<=0){clearInterval(timerInt); mark(false,true)}
+  },1000);
+}
+function checkAnswer(){
+  if(locked){ return; }
+  const ok=current.answers.map(norm).includes(norm($("answer").value));
+  mark(ok,false);
+}
+function mark(ok,timeout){
+  locked=true; clearInterval(timerInt);
+  if(ok){
+    soundOK();
+    score++;
+    if(mode==="challenge"){
+      streak++;
+      $("score").textContent=streak;
+      $("feedback").innerHTML='<span class="good">SPRÁVNĚ ✓</span>';
+    }else{
+      $("score").textContent=score;
+      $("feedback").innerHTML='<span class="good">SPRÁVNĚ ✓</span>';
+    }
+    setTimeout(nextQuestion,1500);
+  }else{
+    soundBad();
+    if(mode==="challenge"){
+      streak=0;
+      $("score").textContent=streak;
+    }
+    $("feedback").innerHTML='<span class="bad">'+(timeout?'ČAS!':'CHYBA')+' ✗</span>';
+    $("correctBox").style.display="block";
+    $("correctBox").innerHTML = "Správně: <b>"+current.answers.join(" / ")+"</b>";
+    $("answer").disabled=true;
+    $("checkBtn").style.display="none";
+    $("continueBtn").style.display="inline-block";
+    $("continueHint").textContent="Pro další zadání klikni na tlačítko DALŠÍ OTÁZKA.";
+  }
+}
+function gradeFor(score){
+  if(score>=14) return "1";
+  if(score>=12) return "2";
+  if(score>=9) return "3";
+  if(score>=7) return "4";
+  return "5";
+}
+function sendResult(kind,total,grade, note=""){
+  if(kind==="TRÉNINK" || resultSent) return;
+  resultSent=true;
+
+  const spravne = (kind==="VÝZVA") ? streak : score;
+  const spatne = Math.max(0, asked - score);
+
+  const payload={
+    jmeno: getStudentName(),
+    trida: getStudentClass(),
+    rezim: kind,
+    znamka: grade,
+    body: score,
+    celkem: total,
+    spravne: spravne,
+    spatne: spatne,
+    poznamka: note,
+    odeslano: new Date().toLocaleString("cs-CZ")
+  };
+
+  if(!APPS_SCRIPT_URL){
+    console.warn("Chybí APPS_SCRIPT_URL, výsledek neodeslán:", payload);
+    return;
+  }
+  try{
+    const body = new URLSearchParams(payload).toString();
+    if(navigator.sendBeacon){
+      navigator.sendBeacon(APPS_SCRIPT_URL, new Blob([body], {type:"application/x-www-form-urlencoded;charset=UTF-8"}));
+    }else{
+      fetch(APPS_SCRIPT_URL, {
+        method:"POST",
+        mode:"no-cors",
+        headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+        body
+      }).catch(()=>{});
+    }
+  }catch(e){ console.warn("Odeslání výsledku selhalo", e); }
+}
+function endGame(){
+  disarmAntiCheat();
+  clearInterval(timerInt);
+  soundWin();
+  show("end");
+  if(mode==="challenge"){
+    $("endTitle").textContent = "MÁŠ JEDNIČKU!";
+    $("endText").textContent = `VÝZVA splněna: ${streak} / ${CHALLENGE_TARGET} správně těsně za sebou. Otázek celkem: ${asked}.`;
+    sendResult("VÝZVA", CHALLENGE_TARGET, "1");
+  }else if(mode==="test"){
+    const grade=gradeFor(score);
+    $("endTitle").textContent = "Známka: " + grade;
+    $("endText").textContent = `TEST: ${score} / ${TEST_LIMIT} správně.`;
+    sendResult("TEST", TEST_LIMIT, grade);
+  }else{
+    $("endTitle").textContent = "Hotovo!";
+    $("endText").textContent = `Výsledek: ${score} správně.`;
+  }
+}
+function backToMenu(){disarmAntiCheat(); clearInterval(timerInt); show("menu")}
+
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden) abortForLeaving();
+});
+window.addEventListener("pagehide", abortForLeaving);
+window.addEventListener("blur", ()=>{
+  // Na desktopu i mobilu často odhalí přepnutí do jiné aplikace/okna. Krátké zpoždění snižuje riziko falešného zásahu.
+  setTimeout(()=>{
+    if(document.hasFocus && !document.hasFocus()) abortForLeaving();
+  }, 350);
+});
+$("answer").addEventListener("keydown",e=>{
+  if(e.key==="Enter" && !locked){ checkAnswer(); }
+});
+</script>
+</body>
+</html>
